@@ -1,39 +1,202 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - SysReparo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tela de Login - CAIXA</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", Arial, sans-serif;
-}
+        body {
+            display: flex;
+            justify-content: center;
+            background-color: #f0f0f0;
+        }
 
-body {
-  height: 100vh;
-  background: #000;
-  color: #fff;
-}
+        .mobile-container {
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background-color: #ffffff;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
 
-/* LAYOUT */
-.container {
-  display: flex;
-  height: 100%;
-}
+        /* Cabeçalho */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
 
-/* LADO ESQUERDO */
-.left {
-  flex: 1;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  border-right: 1px solid #111;
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Ajuste do tamanho da imagem do logo para manter a proporção da tela */
+        .logo img {
+            height: 35px; /* Altura controlada para não quebrar o layout */
+            width: auto;
+        }
+
+        .btn-sair {
+            color: #005ca9;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Conteúdo Principal */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #1d2124;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            color: #5b6571;
+            font-size: 18px;
+            margin-bottom: 32px;
+        }
+
+        /* Input de CPF */
+        .input-group {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .input-group label {
+            position: absolute;
+            top: 8px;
+            left: 18px;
+            font-size: 12px;
+            color: #5b6571;
+            pointer-events: none;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 24px 18px 8px 18px;
+            border: 1.5px solid #6b7a87;
+            border-radius: 24px;
+            font-size: 16px;
+            color: #1d2124;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-group input:focus {
+            border-color: #005ca9;
+        }
+
+        /* Botão Continuar */
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-continuar {
+            background-color: #ebf0f2;
+            color: #9ab0bd;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+        }
+
+        /* Estilo para quando o botão estiver ativo */
+        .btn-continuar.ativo {
+            background-color: #F39200; /* Laranja Caixa */
+            color: #ffffff;
+            cursor: pointer;
+        }
+
+        .btn-continuar.ativo:hover {
+            background-color: #d88200;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        <!-- Cabeçalho com Logo e botão Sair -->
+        <header class="header">
+            <div class="logo">
+                <!-- Logo inserido conforme solicitado -->
+                <a href="https://logo-teka.com/pt-br/caixa/">
+                    <img src="https://logo-teka.com/wp-content/uploads/2026/07/caixa-icon-logo.svg" alt="SVG logo CAIXA" style="max-width:200px;" />
+                </a>
+            </div>
+            <a href="#" class="btn-sair">Sair</a>
+        </header>
+
+        <!-- Área de Formulário -->
+        <main class="main-content">
+            <h1>Entrar</h1>
+            <p class="subtitle">Informe seu CPF</p>
+
+            <div class="input-group">
+                <label for="cpf">CPF</label>
+                <input type="tel" id="cpf" name="cpf" maxlength="14" autocomplete="off">
+            </div>
+
+            <div class="actions">
+                <!-- Adicionado onclick para ir para a tela de senha quando ativo -->
+                <button type="button" class="btn-continuar" id="btnContinuar" disabled onclick="window.location.href='senha.html'">Continuar</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Script para formatar o CPF e habilitar o botão -->
+    <script>
+        const inputCpf = document.getElementById('cpf');
+        const btnContinuar = document.getElementById('btnContinuar');
+
+        inputCpf.addEventListener('input', function(e) {
+            let value = e.target.value;
+
+            // Remove tudo o que não é dígito
+            value = value.replace(/\D/g, "");
+
+            // Adiciona a máscara progressivamente
+            value = value.replace(/(\d{3})(\d)/, "$1.$2");
+            value = value.replace(/(\d{3})(\d)/, "$1.$2");
+            value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+
+            // Atualiza o valor do input com a máscara
+            e.target.value = value;
+
+            // Habilita o botão se o CPF estiver completo (14 caracteres: 11 números + 2 pontos + 1 traço)
+            if (value.length === 14) {
+                btnContinuar.disabled = false;
+                btnContinuar.classList.add('ativo');
+            } else {
+                btnContinuar.disabled = true;
+                btnContinuar.classList.remove('ativo');
+            }
+        });
+    </script>
+</body>
+</html>
 }
 
 .left h1 {
