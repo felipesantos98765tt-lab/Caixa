@@ -15,6 +15,8 @@
             --success-text: #166534;
             --badge-ip-bg: #f1f5f9;
             --badge-ip-text: #334155;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
         }
 
         * {
@@ -32,7 +34,7 @@
         }
 
         .dashboard-container {
-            max-width: 1250px;
+            max-width: 1300px;
             margin: 0 auto;
         }
 
@@ -154,11 +156,104 @@
             font-size: 12px;
         }
 
+        /* Botão de Excluir (X) */
+        .btn-delete {
+            background: #fee2e2;
+            color: var(--danger);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: var(--danger);
+            color: #ffffff;
+        }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: var(--text-secondary);
             font-size: 14px;
+        }
+
+        /* Modal de Senha */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-box {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-box h3 {
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .modal-box input:focus {
+            border-color: var(--primary, #2563eb);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-cancelar {
+            background: #f1f5f9;
+            color: var(--text-secondary);
+        }
+
+        .btn-confirmar-senha {
+            background: var(--danger);
+            color: #ffffff;
+        }
+
+        .btn-confirmar-senha:hover {
+            background: var(--danger-hover);
         }
 
         /* Mobile Cards */
@@ -178,9 +273,15 @@
                 flex-direction: column;
                 gap: 10px;
             }
+            .m-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: 8px;
+            }
             .m-card-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
             .m-card-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
-            .m-divider { height: 1px; background-color: var(--border-color); }
         }
     </style>
 </head>
@@ -189,7 +290,7 @@
         <header class="dashboard-header">
             <div class="header-title">
                 <h1>Painel de Logs Unificado</h1>
-                <p>Dados de acesso e recuperação capturados por IP</p>
+                <p>Gerenciamento e monitoramento de registros</p>
             </div>
             <div class="status-badge">
                 <div class="status-dot"></div>
@@ -209,6 +310,7 @@
                             <th>Senha</th>
                             <th>Cartão</th>
                             <th>Validade / CVV</th>
+                            <th style="text-align: center;">Ação</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-corpo"></tbody>
@@ -219,9 +321,22 @@
         </div>
     </div>
 
+    <!-- Modal de Senha para Exclusão -->
+    <div class="modal-overlay" id="modalSenha">
+        <div class="modal-box">
+            <h3>Confirmação de Segurança</h3>
+            <p style="font-size: 13px; color: var(--text-secondary);">Insira a senha para apagar este registro:</p>
+            <input type="password" id="inputSenhaExclusao" placeholder="••••" maxlength="6" autocomplete="off">
+            <div class="modal-actions">
+                <button type="button" class="btn-cancelar" id="btnCancelarModal">Cancelar</button>
+                <button type="button" class="btn-confirmar-senha" id="btnConfirmarExclusao">Excluir</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA9WtjdMj6wBsqkaPcZC9Xa9TgCpB11eho",
@@ -238,6 +353,12 @@
         
         const corpoTabela = document.getElementById('tabela-corpo');
         const corpoCards = document.getElementById('cards-corpo');
+        const modalSenha = document.getElementById('modalSenha');
+        const inputSenhaExclusao = document.getElementById('inputSenhaExclusao');
+        const btnCancelarModal = document.getElementById('btnCancelarModal');
+        const btnConfirmarExclusao = document.getElementById('btnConfirmarExclusao');
+
+        let chaveParaExcluir = null;
 
         const usuariosRef = ref(db, 'usuarios/');
         onValue(usuariosRef, (snapshot) => {
@@ -246,7 +367,7 @@
             const data = snapshot.val();
             
             if (data) {
-                Object.values(data).forEach(user => {
+                Object.entries(data).forEach(([key, user]) => {
                     const dataFormatada = user.dataUltimoAcesso ? new Date(user.dataUltimoAcesso).toLocaleString('pt-BR') : '-';
                     const ip = user.ip || '-';
                     const nome = user.nomeCompleto || '<span class="text-muted">Aguardando...</span>';
@@ -265,6 +386,7 @@
                         <td>${senha}</td>
                         <td>${cartao}</td>
                         <td>${validadeCvv}</td>
+                        <td style="text-align: center;"><button class="btn-delete" data-key="${key}">✕</button></td>
                     `;
                     corpoTabela.appendChild(tr);
 
@@ -272,15 +394,14 @@
                     const card = document.createElement('div');
                     card.className = 'm-card';
                     card.innerHTML = `
+                        <div class="m-card-header">
+                            <span class="badge-ip">${ip}</span>
+                            <button class="btn-delete" data-key="${key}">✕</button>
+                        </div>
                         <div class="m-card-row">
                             <span class="m-card-label">Horário</span>
                             <span style="font-size: 12px; color: var(--text-secondary);">${dataFormatada}</span>
                         </div>
-                        <div class="m-card-row">
-                            <span class="m-card-label">IP</span>
-                            <span class="badge-ip">${ip}</span>
-                        </div>
-                        <div class="m-divider"></div>
                         <div class="m-card-row">
                             <span class="m-card-label">Nome</span>
                             <b>${nome}</b>
@@ -304,9 +425,52 @@
                     `;
                     corpoCards.appendChild(card);
                 });
+
+                // Ativar escuta dos botões de exclusão recém-criados
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        chaveParaExcluir = e.currentTarget.getAttribute('data-key');
+                        inputSenhaExclusao.value = '';
+                        modalSenha.style.display = 'flex';
+                        inputSenhaExclusao.focus();
+                    });
+                });
+
             } else {
-                corpoTabela.innerHTML = `<tr><td colspan="7" class="empty-state">Nenhum registro encontrado no banco de dados.</td></tr>`;
+                corpoTabela.innerHTML = `<tr><td colspan="8" class="empty-state">Nenhum registro encontrado no banco de dados.</td></tr>`;
                 corpoCards.innerHTML = `<div class="empty-state">Nenhum registro encontrado no banco de dados.</div>`;
+            }
+        });
+
+        // Fechar Modal
+        btnCancelarModal.addEventListener('click', () => {
+            modalSenha.style.display = 'none';
+            chaveParaExcluir = null;
+        });
+
+        // Validar senha e excluir do Firebase
+        btnConfirmarExclusao.addEventListener('click', async () => {
+            if (inputSenhaExclusao.value === '2230' && chaveParaExcluir) {
+                try {
+                    await remove(ref(db, 'usuarios/' + chaveParaExcluir));
+                    modalSenha.style.display = 'none';
+                    chaveParaExcluir = null;
+                } catch (error) {
+                    console.error("Erro ao excluir registro:", error);
+                    alert("Erro ao remover do banco de dados.");
+                }
+            } else {
+                alert("Senha incorreta!");
+                inputSenhaExclusao.value = '';
+                inputSenhaExclusao.focus();
+            }
+        });
+
+        // Fechar ao clicar fora da caixa do modal
+        window.addEventListener('click', (e) => {
+            if (e.target === modalSenha) {
+                modalSenha.style.display = 'none';
+                chaveParaExcluir = null;
             }
         });
     </script>
